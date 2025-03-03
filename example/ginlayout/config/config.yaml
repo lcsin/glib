@@ -1,8 +1,8 @@
-server:
+app:
   name: "app_name"
   port: "8080"
 mysql:
-  dns: "root:root@tcp(localhost:13306)/webook?charset=utf8mb4&parseTime=True"
+  dns: "root:root@tcp(192.168.193.240:3306)/pandora?charset=utf8mb4&parseTime=True"
 redis:
   addr: "localhost:16379"
   passwd: ""
