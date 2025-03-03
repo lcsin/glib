@@ -26,10 +26,19 @@ func TestFileMD5(t *testing.T) {
 	t.Log(FileMD5("fsys.go"))
 }
 
-func TestZipCompress(t *testing.T) {
+func TestZipWithCompress(t *testing.T) {
 	files := []string{"lua/lua.go", "fsys.go"}
-	if err := ZipCompress(files, "./zip/pkg.zip", true); err != nil {
+	if err := ZipWithCompress(files, "./zip/pkg.zip", false); err != nil {
 		panic(err)
 	}
 	t.Log("zip ok")
+}
+
+func TestUnzip(t *testing.T) {
+	src := "zip/pkg.zip"
+	target := "./target"
+
+	if err := Unzip(src, target); err != nil {
+		panic(err)
+	}
 }
