@@ -21,6 +21,6 @@ func Paginate(db *gorm.DB, pageNo, pageSize int64) *gorm.DB {
 }
 
 // PaginateById 根据id分页
-func PaginateById(db *gorm.DB, id int64, limit int) *gorm.DB {
-	return db.Where("id > ?", id).Order("id").Limit(limit)
+func PaginateById(db *gorm.DB, lastId int64, limit int) *gorm.DB {
+	return db.Where("id > ?", lastId).Order("id").Limit(limit)
 }
