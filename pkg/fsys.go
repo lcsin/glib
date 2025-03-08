@@ -156,7 +156,7 @@ func Unzip(archive, target string) error {
 	}
 	defer reader.Close()
 
-	if err := os.MkdirAll(target, 0755); err != nil {
+	if err = os.MkdirAll(target, 0755); err != nil {
 		return err
 	}
 
@@ -189,7 +189,7 @@ func Unzip(archive, target string) error {
 		}
 		defer targetFile.Close()
 
-		if _, err := io.Copy(targetFile, fileReader); err != nil {
+		if _, err = io.Copy(targetFile, fileReader); err != nil {
 			return err
 		}
 
