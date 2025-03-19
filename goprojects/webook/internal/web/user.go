@@ -51,7 +51,7 @@ func (u *UserHandler) Register(c *gin.Context) {
 		Username: req.Username,
 		Age:      req.Age,
 	}); err != nil {
-		api.ResponseError(c, -1, "系统错误")
+		api.ResponseError(c, -1, err.Error())
 		return
 	}
 

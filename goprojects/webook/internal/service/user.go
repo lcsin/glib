@@ -19,6 +19,12 @@ func NewUserService(repo *repository.UserRepository) *UserService {
 }
 
 func (us *UserService) Register(ctx context.Context, u domain.User) error {
+	// 校验邮箱是否已经被注册
+	user, _ := us.repo.GetByEmail(ctx, u.Email)
+	if user.ID > 0 {
+		return errors.New("该邮箱已经被注册")
+	}
+
 	// 密码加密
 	password, err := bcrypt.GenerateFromPassword([]byte(u.Passwd), bcrypt.DefaultCost)
 	if err != nil {
@@ -36,11 +42,7 @@ func (us *UserService) Login(ctx context.Context, email, passwd string) (*domain
 	}
 
 	// 比对密码是否一致
-	password, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, errors.New("系统错误")
-	}
-	if err = bcrypt.CompareHashAndPassword(password, []byte(passwd)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Passwd), []byte(passwd)); err != nil {
 		return nil, errors.New("用户名不存在或密码错误")
 	}
 

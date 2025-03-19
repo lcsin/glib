@@ -23,7 +23,7 @@ func (ud *UserDAO) Insert(ctx context.Context, user model.User) error {
 
 func (ud *UserDAO) SelectByID(ctx context.Context, id int64) (*model.User, error) {
 	var user model.User
-	if err := ud.db.WithContext(ctx).Where("id = ?", id).Find(&user).Error; err != nil {
+	if err := ud.db.WithContext(ctx).Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -31,7 +31,7 @@ func (ud *UserDAO) SelectByID(ctx context.Context, id int64) (*model.User, error
 
 func (ud *UserDAO) SelectByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user model.User
-	if err := ud.db.WithContext(ctx).Where("email = ?", email).Find(&user).Error; err != nil {
+	if err := ud.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
