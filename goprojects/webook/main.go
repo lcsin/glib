@@ -37,7 +37,14 @@ func initUserHandler(db *gorm.DB) *web.UserHandler {
 
 func initWebServer() *gin.Engine {
 	server := gin.Default()
-	server.Use(middleware.DefaultCors())
+	server.Use(
+		middleware.DefaultCors(),
+		middleware.Session("ssid", []byte("uid")),
+		middleware.NewLoginBuilder().
+			IgnorePath("/users/v1/register").
+			IgnorePath("/users/v1/login").
+			Build(),
+	)
 	server.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
 	})

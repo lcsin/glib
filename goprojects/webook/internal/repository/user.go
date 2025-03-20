@@ -25,6 +25,14 @@ func (ur *UserRepository) Create(ctx context.Context, user domain.User) error {
 	})
 }
 
+func (ur *UserRepository) ModifyByID(ctx context.Context, user domain.User) error {
+	return ur.dao.UpdateByID(ctx, model.User{
+		ID:       user.ID,
+		Username: user.Username,
+		Age:      user.Age,
+	})
+}
+
 func (ur *UserRepository) GetByID(ctx context.Context, id int64) (*domain.User, error) {
 	user, err := ur.dao.SelectByID(ctx, id)
 	if err != nil {

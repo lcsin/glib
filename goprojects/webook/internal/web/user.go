@@ -1,10 +1,11 @@
 package web
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/lcsin/webook/internal/domain"
 	"github.com/lcsin/webook/internal/service"
-	"github.com/lcsin/webook/pkg/api"
+	"github.com/lcsin/webook/pkg"
 )
 
 type UserHandler struct {
@@ -41,7 +42,7 @@ func (u *UserHandler) Register(c *gin.Context) {
 
 	// todo 校验邮箱格式和密码格式
 	if req.Passwd != req.ConfirmPasswd {
-		api.ResponseError(c, -1, "两次输入的密码不一致")
+		pkg.ResponseError(c, -1, "两次输入的密码不一致")
 		return
 	}
 
@@ -51,11 +52,11 @@ func (u *UserHandler) Register(c *gin.Context) {
 		Username: req.Username,
 		Age:      req.Age,
 	}); err != nil {
-		api.ResponseError(c, -1, err.Error())
+		pkg.ResponseError(c, -1, err.Error())
 		return
 	}
 
-	api.ResponseOK(c, nil)
+	pkg.ResponseOK(c, nil)
 }
 
 func (u *UserHandler) Login(c *gin.Context) {
@@ -71,22 +72,57 @@ func (u *UserHandler) Login(c *gin.Context) {
 
 	user, err := u.svc.Login(c, req.Email, req.Passwd)
 	if err != nil {
-		api.ResponseError(c, -1, err.Error())
+		pkg.ResponseError(c, -1, err.Error())
 		return
 	}
-	user.Passwd = ""
 
-	api.ResponseOK(c, user)
+	// 登录成功，设置session
+	session := sessions.Default(c)
+	session.Set("uid", user.ID)
+	_ = session.Save()
+
+	pkg.ResponseOK(c, user)
 }
 
 func (u *UserHandler) Logout(c *gin.Context) {
+	// 清空session
+	session := sessions.Default(c)
+	session.Clear()
 
+	// 清除cookie
+	c.SetCookie("ssid", "", -1, "/", c.Request.Host, false, false)
+	pkg.ResponseOK(c, nil)
 }
 
 func (u *UserHandler) Profile(c *gin.Context) {
+	profile, err := u.svc.Profile(c, c.GetInt64("uid"))
+	if err != nil {
+		pkg.ResponseError(c, -1, err.Error())
+		return
+	}
 
+	pkg.ResponseOK(c, profile)
 }
 
 func (u *UserHandler) Edit(c *gin.Context) {
+	type EditReq struct {
+		Username string `json:"username"`
+		Age      int8   `json:"age"`
+	}
 
+	var req EditReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return
+	}
+
+	if err := u.svc.Edit(c, domain.User{
+		ID:       c.GetInt64("uid"),
+		Username: req.Username,
+		Age:      req.Age,
+	}); err != nil {
+		pkg.ResponseError(c, -1, err.Error())
+		return
+	}
+
+	pkg.ResponseOK(c, nil)
 }

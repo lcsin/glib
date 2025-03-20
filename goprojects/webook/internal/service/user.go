@@ -20,19 +20,21 @@ func NewUserService(repo *repository.UserRepository) *UserService {
 
 func (us *UserService) Register(ctx context.Context, u domain.User) error {
 	// 校验邮箱是否已经被注册
-	user, _ := us.repo.GetByEmail(ctx, u.Email)
-	if user.ID > 0 {
-		return errors.New("该邮箱已经被注册")
-	}
+	// 先查再注册的情况下，理论上会有并发问题，但是我觉得邮箱冲突的并发问题发生的可能性不大。
+	_, err := us.repo.GetByEmail(ctx, u.Email)
+	switch err {
+	case gorm.ErrRecordNotFound: // 说明邮箱没重复，走正常的注册流程
+		// 密码加密
+		password, err := bcrypt.GenerateFromPassword([]byte(u.Passwd), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		u.Passwd = string(password)
 
-	// 密码加密
-	password, err := bcrypt.GenerateFromPassword([]byte(u.Passwd), bcrypt.DefaultCost)
-	if err != nil {
-		return err
+		return us.repo.Create(ctx, u)
+	default:
+		return errors.New("系统错误")
 	}
-	u.Passwd = string(password)
-
-	return us.repo.Create(ctx, u)
 }
 
 func (us *UserService) Login(ctx context.Context, email, passwd string) (*domain.User, error) {
@@ -46,5 +48,26 @@ func (us *UserService) Login(ctx context.Context, email, passwd string) (*domain
 		return nil, errors.New("用户名不存在或密码错误")
 	}
 
+	user.Passwd = ""
 	return user, nil
+}
+
+func (us *UserService) Profile(ctx context.Context, uid int64) (*domain.User, error) {
+	user, err := us.repo.GetByID(ctx, uid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("用户不存在")
+		}
+		return nil, errors.New("系统错误")
+	}
+
+	user.Passwd = ""
+	return user, nil
+}
+
+func (us *UserService) Edit(ctx context.Context, u domain.User) error {
+	if err := us.repo.ModifyByID(ctx, u); err != nil {
+		return errors.New("系统错误")
+	}
+	return nil
 }

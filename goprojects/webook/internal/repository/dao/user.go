@@ -21,6 +21,14 @@ func (ud *UserDAO) Insert(ctx context.Context, user model.User) error {
 	return ud.db.WithContext(ctx).Create(&user).Error
 }
 
+func (ud *UserDAO) UpdateByID(ctx context.Context, user model.User) error {
+	return ud.db.Model(&model.User{}).WithContext(ctx).Where("id = ?", user.ID).UpdateColumns(map[string]interface{}{
+		"username":     user.Username,
+		"age":          user.Age,
+		"updated_time": time.Now().UnixMilli(),
+	}).Error
+}
+
 func (ud *UserDAO) SelectByID(ctx context.Context, id int64) (*model.User, error) {
 	var user model.User
 	if err := ud.db.WithContext(ctx).Where("id = ?", id).First(&user).Error; err != nil {
