@@ -8,6 +8,10 @@ import (
 	"github.com/lcsin/webook/pkg"
 )
 
+const (
+	SessionUser = "session_user"
+)
+
 type UserHandler struct {
 	svc *service.UserService
 }
@@ -78,23 +82,36 @@ func (u *UserHandler) Login(c *gin.Context) {
 
 	// 登录成功，设置session
 	session := sessions.Default(c)
-	session.Set("uid", user.ID)
-	_ = session.Save()
+	session.Set(SessionUser, user)
+	if err = session.Save(); err != nil {
+		pkg.ResponseError(c, -1, "系统错误")
+		return
+	}
 
 	pkg.ResponseOK(c, user)
 }
 
 func (u *UserHandler) Logout(c *gin.Context) {
-	// 清空session
+	// 删除session和cookie
 	session := sessions.Default(c)
+	session.Options(sessions.Options{MaxAge: -1, Path: "/"})
 	session.Clear()
+	session.Save()
 
 	// 清除cookie
-	c.SetCookie("ssid", "", -1, "/", c.Request.Host, false, false)
+	//c.SetCookie(SessionKey, "", -1, "/", c.Request.Host, false, false)
 	pkg.ResponseOK(c, nil)
 }
 
 func (u *UserHandler) Profile(c *gin.Context) {
+	// 直接从session中获取
+	session := sessions.Default(c)
+	user, ok := session.Get(SessionUser).(*domain.User)
+	if ok && user != nil {
+		pkg.ResponseOK(c, user)
+		return
+	}
+
 	profile, err := u.svc.Profile(c, c.GetInt64("uid"))
 	if err != nil {
 		pkg.ResponseError(c, -1, err.Error())

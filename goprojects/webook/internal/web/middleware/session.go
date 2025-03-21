@@ -2,14 +2,14 @@ package middleware
 
 import (
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/lcsin/webook/internal/domain"
+	"github.com/lcsin/webook/internal/web"
 	"github.com/lcsin/webook/pkg"
 )
 
-func Session(ssid string, secret []byte) gin.HandlerFunc {
-	store := cookie.NewStore(secret)
-	return sessions.Sessions(ssid, store)
+func Session(name string, store sessions.Store) gin.HandlerFunc {
+	return sessions.Sessions(name, store)
 }
 
 type LoginBuilder struct {
@@ -36,13 +36,14 @@ func (l *LoginBuilder) Build() gin.HandlerFunc {
 
 		// 登录校验
 		session := sessions.Default(c)
-		uid := session.Get("uid")
-		if uid == nil { // 用户未登录
+		user, ok := session.Get(web.SessionUser).(*domain.User)
+		if !ok || user == nil { // 用户未登录
 			pkg.ResponseError(c, -1, "未授权")
 			c.Abort()
 			return
 		}
+
 		// gin上下文注入uid
-		c.Set("uid", uid)
+		c.Set("uid", user.ID)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/lcsin/webook/internal/repository"
 	"github.com/lcsin/webook/internal/repository/dao"
@@ -36,10 +37,16 @@ func initUserHandler(db *gorm.DB) *web.UserHandler {
 }
 
 func initWebServer() *gin.Engine {
+	store, err := redis.NewStore(16, "tcp", "127.0.0.1:16379", "",
+		[]byte("08092c221370c1ddca1db0ab89cf61b7"), []byte("c0c5091f15628a94ead9f5b7184d918a"))
+	if err != nil {
+		panic(err)
+	}
+
 	server := gin.Default()
 	server.Use(
 		middleware.DefaultCors(),
-		middleware.Session("ssid", []byte("uid")),
+		middleware.Session("ssid", store),
 		middleware.NewLoginBuilder().
 			IgnorePath("/users/v1/register").
 			IgnorePath("/users/v1/login").

@@ -2,11 +2,9 @@ package middleware
 
 import (
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
 
-func Session(ssid string, secret []byte) gin.HandlerFunc {
-	store := cookie.NewStore(secret)
+func Session(ssid string, store sessions.Store) gin.HandlerFunc {
 	return sessions.Sessions(ssid, store)
 }

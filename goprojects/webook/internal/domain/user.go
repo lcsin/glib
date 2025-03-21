@@ -1,5 +1,14 @@
 package domain
 
+import "encoding/gob"
+
+// 在使用 gin 的 sessions 插件时，如果 save() 的是一个结构体
+// 可能会抛出：gob: type not registered for interface 的错误
+// 解决方法是：在序列化之前进行一次注册
+func init() {
+	gob.Register(&User{})
+}
+
 type User struct {
 	ID           int64  `json:"id"`
 	Email        string `json:"email"`
