@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/lcsin/webook/internal/repository/model"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type UserDAO struct {
-	db *gorm.DB
+	db  *gorm.DB
+	rdb *redis.Cmdable
 }
 
 func NewUserDAO(db *gorm.DB) *UserDAO {

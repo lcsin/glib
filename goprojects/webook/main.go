@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -10,10 +11,12 @@ import (
 	"github.com/lcsin/webook/config"
 	"github.com/lcsin/webook/internal/domain"
 	"github.com/lcsin/webook/internal/repository"
+	"github.com/lcsin/webook/internal/repository/cache"
 	"github.com/lcsin/webook/internal/repository/dao"
 	"github.com/lcsin/webook/internal/service"
 	"github.com/lcsin/webook/internal/web"
 	"github.com/lcsin/webook/internal/web/middleware"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -21,17 +24,19 @@ import (
 
 func main() {
 	db := initDB()
+	rdb := InitRedis()
 	server := initWebServer()
 
-	userHandler := initUserHandler(db)
+	userHandler := initUserHandler(db, rdb)
 	userHandler.RegisterRoutes(server)
 
 	server.Run(":8080")
 }
 
-func initUserHandler(db *gorm.DB) *web.UserHandler {
+func initUserHandler(db *gorm.DB, cmd redis.Cmdable) *web.UserHandler {
 	userDAO := dao.NewUserDAO(db)
-	userRepository := repository.NewUserRepository(userDAO)
+	userCache := cache.NewUserCache(cmd)
+	userRepository := repository.NewUserRepository(userDAO, userCache)
 	userService := service.NewUserService(userRepository)
 	userHandler := web.NewUserHandler(userService)
 	return userHandler
@@ -75,4 +80,14 @@ func initDB() *gorm.DB {
 		panic(err)
 	}
 	return db
+}
+
+func InitRedis() redis.Cmdable {
+	client := redis.NewClient(&redis.Options{
+		Addr: "localhost:16379",
+	})
+	if err := client.Ping(context.Background()).Err(); err != nil {
+		panic(err)
+	}
+	return client
 }
