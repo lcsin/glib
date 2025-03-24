@@ -1,15 +1,15 @@
 package web
 
 import (
+	"errors"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/lcsin/webook/config"
 	"github.com/lcsin/webook/internal/domain"
 	"github.com/lcsin/webook/internal/service"
 	"github.com/lcsin/webook/pkg"
-)
-
-const (
-	SessionUser = "session_user"
 )
 
 type UserHandler struct {
@@ -81,13 +81,28 @@ func (u *UserHandler) Login(c *gin.Context) {
 	}
 
 	// 登录成功，设置session
-	session := sessions.Default(c)
-	session.Set(SessionUser, user)
-	if err = session.Save(); err != nil {
+	//session := sessions.Default(c)
+	//session.Set("uid", user)
+	//if err = session.Save(); err != nil {
+	//	pkg.ResponseError(c, -1, "系统错误")
+	//	return
+	//}
+
+	// 登录成功，设置jwt
+	userClaims := domain.UserClaims{
+		UID:          user.ID,
+		Username:     user.Username,
+		Age:          user.Age,
+		RegisterTime: user.RegisterTime,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, userClaims)
+	tokenStr, err := token.SignedString([]byte(config.Cfg.Jwt.Secret))
+	if err != nil {
 		pkg.ResponseError(c, -1, "系统错误")
 		return
 	}
 
+	c.Header("Authorization", tokenStr)
 	pkg.ResponseOK(c, user)
 }
 
@@ -105,14 +120,21 @@ func (u *UserHandler) Logout(c *gin.Context) {
 
 func (u *UserHandler) Profile(c *gin.Context) {
 	// 直接从session中获取
-	session := sessions.Default(c)
-	user, ok := session.Get(SessionUser).(*domain.User)
-	if ok && user != nil {
-		pkg.ResponseOK(c, user)
+	//session := sessions.Default(c)
+	//user, ok := session.Get(SessionUser).(*domain.User)
+	//if ok && user != nil {
+	//	pkg.ResponseOK(c, user)
+	//	return
+	//}
+
+	// 从jwt设置的上下文获取uid
+	uid, err := u.getContextJwtUID(c)
+	if err != nil {
+		pkg.ResponseError(c, -1, err.Error())
 		return
 	}
 
-	profile, err := u.svc.Profile(c, c.GetInt64("uid"))
+	profile, err := u.svc.Profile(c, uid)
 	if err != nil {
 		pkg.ResponseError(c, -1, err.Error())
 		return
@@ -132,8 +154,15 @@ func (u *UserHandler) Edit(c *gin.Context) {
 		return
 	}
 
-	if err := u.svc.Edit(c, domain.User{
-		ID:       c.GetInt64("uid"),
+	// 从jwt设置的上下文获取uid
+	uid, err := u.getContextJwtUID(c)
+	if err != nil {
+		pkg.ResponseError(c, -1, err.Error())
+		return
+	}
+
+	if err = u.svc.Edit(c, domain.User{
+		ID:       uid,
 		Username: req.Username,
 		Age:      req.Age,
 	}); err != nil {
@@ -142,4 +171,17 @@ func (u *UserHandler) Edit(c *gin.Context) {
 	}
 
 	pkg.ResponseOK(c, nil)
+}
+
+func (u *UserHandler) getContextJwtUID(c *gin.Context) (int64, error) {
+	claims, ok := c.Get("uid")
+	if !ok {
+		return 0, errors.New("系统错误")
+	}
+	user, ok := claims.(*domain.UserClaims)
+	if !ok {
+		return 0, errors.New("系统错误")
+
+	}
+	return user.UID, nil
 }
