@@ -1,4 +1,4 @@
-package pkg
+package iutil
 
 import "testing"
 

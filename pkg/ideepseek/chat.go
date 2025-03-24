@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/lcsin/glib/pkg"
+	"github.com/lcsin/glib/pkg/iutil"
 )
 
 func (c *Client) Chat(messages ...Messages) (*ResponseBody, error) {
@@ -21,7 +21,7 @@ func (c *Client) Chat(messages ...Messages) (*ResponseBody, error) {
 		Stream:   c.Stream,
 	}
 	body, _ := json.Marshal(req)
-	bytes, err := pkg.HTTP(url, "POST", body, map[string]string{
+	bytes, err := iutil.HTTP(url, "POST", body, map[string]string{
 		"Content-Type":  "application/json",
 		"Accept":        "application/json",
 		"Authorization": fmt.Sprintf("Bearer %v", c.Apikey),
