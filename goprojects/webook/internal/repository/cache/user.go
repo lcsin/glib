@@ -10,11 +10,17 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+type IUserCache interface {
+	Get(ctx context.Context, uid int64) (*domain.User, error)
+	Set(ctx context.Context, user domain.User) error
+	Delete(ctx context.Context, uid int64) error
+}
+
 type UserCache struct {
 	cmd redis.Cmdable
 }
 
-func NewUserCache(cmd redis.Cmdable) *UserCache {
+func NewUserCache(cmd redis.Cmdable) IUserCache {
 	return &UserCache{
 		cmd: cmd,
 	}

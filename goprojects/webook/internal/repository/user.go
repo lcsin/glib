@@ -9,12 +9,19 @@ import (
 	"github.com/lcsin/webook/internal/repository/model"
 )
 
-type UserRepository struct {
-	dao   *dao.UserDAO
-	cache *cache.UserCache
+type IUserRepository interface {
+	Create(ctx context.Context, user domain.User) error
+	ModifyByID(ctx context.Context, user domain.User) error
+	GetByID(ctx context.Context, id int64) (*domain.User, error)
+	GetByEmail(ctx context.Context, email string) (*domain.User, error)
 }
 
-func NewUserRepository(dao *dao.UserDAO, cache *cache.UserCache) *UserRepository {
+type UserRepository struct {
+	dao   dao.IUserDAO
+	cache cache.IUserCache
+}
+
+func NewUserRepository(dao dao.IUserDAO, cache cache.IUserCache) IUserRepository {
 	return &UserRepository{dao: dao, cache: cache}
 }
 

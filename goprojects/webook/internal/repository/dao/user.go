@@ -5,16 +5,21 @@ import (
 	"time"
 
 	"github.com/lcsin/webook/internal/repository/model"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
-type UserDAO struct {
-	db  *gorm.DB
-	rdb *redis.Cmdable
+type IUserDAO interface {
+	Insert(ctx context.Context, user model.User) error
+	UpdateByID(ctx context.Context, user model.User) error
+	SelectByID(ctx context.Context, id int64) (*model.User, error)
+	SelectByEmail(ctx context.Context, email string) (*model.User, error)
 }
 
-func NewUserDAO(db *gorm.DB) *UserDAO {
+type UserDAO struct {
+	db *gorm.DB
+}
+
+func NewUserDAO(db *gorm.DB) IUserDAO {
 	return &UserDAO{db: db}
 }
 

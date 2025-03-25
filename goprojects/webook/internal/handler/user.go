@@ -1,4 +1,4 @@
-package web
+package handler
 
 import (
 	"errors"
@@ -13,10 +13,10 @@ import (
 )
 
 type UserHandler struct {
-	svc *service.UserService
+	svc service.IUserService
 }
 
-func NewUserHandler(svc *service.UserService) *UserHandler {
+func NewUserHandler(svc service.IUserService) *UserHandler {
 	return &UserHandler{svc: svc}
 }
 
