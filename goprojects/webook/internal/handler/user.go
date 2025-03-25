@@ -12,6 +12,9 @@ import (
 	"github.com/lcsin/webook/pkg"
 )
 
+// 确保 UserHandler 实现了 IHandler 接口
+var _ IHandler = (*UserHandler)(nil)
+
 type UserHandler struct {
 	svc service.IUserService
 }
@@ -96,7 +99,8 @@ func (u *UserHandler) Login(c *gin.Context) {
 		RegisterTime: user.RegisterTime,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, userClaims)
-	tokenStr, err := token.SignedString([]byte(config.Cfg.Jwt.Secret))
+	//jwtKey := viper.GetString("jwt.key")
+	tokenStr, err := token.SignedString([]byte(config.Cfg.Jwt.Key))
 	if err != nil {
 		pkg.ResponseError(c, -1, "系统错误")
 		return

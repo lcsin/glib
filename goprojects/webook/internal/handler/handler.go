@@ -23,6 +23,6 @@ func InitMiddlewares() []gin.HandlerFunc {
 		middleware.NewLoginValidatorBuilder("uid").
 			IgnorePath("/users/v1/register").
 			IgnorePath("/users/v1/login").
-			JWT([]byte(config.Cfg.Jwt.Secret), &domain.UserClaims{}),
+			JWT([]byte(config.Cfg.Jwt.Key), &domain.UserClaims{}),
 	}
 }

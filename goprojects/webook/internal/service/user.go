@@ -6,6 +6,7 @@ import (
 
 	"github.com/lcsin/webook/internal/domain"
 	"github.com/lcsin/webook/internal/repository"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -34,12 +35,13 @@ func (us *UserService) Register(ctx context.Context, u domain.User) error {
 		// 密码加密
 		password, err := bcrypt.GenerateFromPassword([]byte(u.Passwd), bcrypt.DefaultCost)
 		if err != nil {
+			zap.L().Error("bcrypt.GenerateFromPassword", zap.Error(err))
 			return err
 		}
 		u.Passwd = string(password)
-
 		return us.repo.Create(ctx, u)
 	default:
+		zap.L().Error("us.repo.GetByEmail", zap.Error(err))
 		return errors.New("系统错误")
 	}
 }
@@ -65,6 +67,7 @@ func (us *UserService) Profile(ctx context.Context, uid int64) (*domain.User, er
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("用户不存在")
 		}
+		zap.L().Error("us.repo.GetByID Error", zap.Error(err))
 		return nil, errors.New("系统错误")
 	}
 
@@ -74,6 +77,7 @@ func (us *UserService) Profile(ctx context.Context, uid int64) (*domain.User, er
 
 func (us *UserService) Edit(ctx context.Context, u domain.User) error {
 	if err := us.repo.ModifyByID(ctx, u); err != nil {
+		zap.L().Error("us.repo.ModifyByID", zap.Error(err))
 		return errors.New("系统错误")
 	}
 	return nil

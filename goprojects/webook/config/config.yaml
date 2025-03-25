@@ -1,0 +1,10 @@
+app:
+  name: "webook"
+  port: 8080
+jwt:
+  key: "c0c5091f15628a94ead9f5b7184d918a"
+mysql:
+  dsn: "root:root@tcp(localhost:13306)/webook?charset=utf8mb4&parseTime=True"
+redis:
+  addr: "localhost:16379"
+  passwd:

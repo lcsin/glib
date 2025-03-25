@@ -3,13 +3,12 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/lcsin/webook/config"
+	"github.com/lcsin/webook/ioc"
+	"github.com/spf13/viper"
 )
 
 func Run() {
-	//server := InitWebServer()
-	//server.Run(config.Cfg)
-
+	ioc.InitConfig()
 	server := InitWebServer()
-	server.Run(fmt.Sprintf(":%v", config.Cfg.App.Port))
+	server.Run(fmt.Sprintf(":%v", viper.Get("app.port")))
 }

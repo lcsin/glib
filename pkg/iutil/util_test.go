@@ -36,8 +36,3 @@ func TestBalancedWildcards(t *testing.T) {
 	text = "{<>[]<}}"
 	t.Log(BalancedWildcards(text, dict)) // false
 }
-
-func TestRegx(t *testing.T) {
-	t.Log(Email.MatchString("1847qq.com"))
-	t.Log(Phone.MatchString("1875838769"))
-}
