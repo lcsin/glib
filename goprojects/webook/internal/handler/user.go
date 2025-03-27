@@ -132,7 +132,7 @@ func (u *UserHandler) Profile(c *gin.Context) {
 	//}
 
 	// 从jwt设置的上下文获取uid
-	uid, err := u.getContextJwtUID(c)
+	uid, err := GetContextJwtUID(c)
 	if err != nil {
 		pkg.ResponseError(c, -1, err.Error())
 		return
@@ -159,7 +159,7 @@ func (u *UserHandler) Edit(c *gin.Context) {
 	}
 
 	// 从jwt设置的上下文获取uid
-	uid, err := u.getContextJwtUID(c)
+	uid, err := GetContextJwtUID(c)
 	if err != nil {
 		pkg.ResponseError(c, -1, err.Error())
 		return
@@ -177,7 +177,7 @@ func (u *UserHandler) Edit(c *gin.Context) {
 	pkg.ResponseOK(c, nil)
 }
 
-func (u *UserHandler) getContextJwtUID(c *gin.Context) (int64, error) {
+func GetContextJwtUID(c *gin.Context) (int64, error) {
 	claims, ok := c.Get("uid")
 	if !ok {
 		return 0, errors.New("系统错误")

@@ -11,9 +11,9 @@ type IHandler interface {
 	RegisterRoutes(v1 *gin.Engine)
 }
 
-func InitHandlers(userHandler *UserHandler) []IHandler {
+func InitHandlers(userHandler *UserHandler, artHandler *ArticleHandler) []IHandler {
 	return []IHandler{
-		userHandler,
+		userHandler, artHandler,
 	}
 }
 

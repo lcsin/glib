@@ -8,6 +8,7 @@ package cmd
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/wire"
 	"github.com/lcsin/webook/internal/handler"
 	"github.com/lcsin/webook/internal/repository"
 	"github.com/lcsin/webook/internal/repository/cache"
@@ -27,7 +28,29 @@ func InitWebServer() *gin.Engine {
 	iUserRepository := repository.NewUserRepository(iUserDAO, iUserCache)
 	iUserService := service.NewUserService(iUserRepository)
 	userHandler := handler.NewUserHandler(iUserService)
-	v2 := handler.InitHandlers(userHandler)
+	iArticleDAO := dao.NewArticleDAO(db)
+	iArticleRepository := repository.NewArticleRepository(iArticleDAO, iUserDAO)
+	iArticleService := service.NewArticleService(iArticleRepository)
+	articleHandler := handler.NewArticleHandler(iArticleService)
+	v2 := handler.InitHandlers(userHandler, articleHandler)
 	engine := ioc.InitRouter(v, v2)
 	return engine
 }
+
+func InitTestArticleHandler() *handler.ArticleHandler {
+	db := ioc.InitTestDB()
+	iArticleDAO := dao.NewArticleDAO(db)
+	iUserDAO := dao.NewUserDAO(db)
+	iArticleRepository := repository.NewArticleRepository(iArticleDAO, iUserDAO)
+	iArticleService := service.NewArticleService(iArticleRepository)
+	articleHandler := handler.NewArticleHandler(iArticleService)
+	return articleHandler
+}
+
+// wire.go:
+
+var thirdProvider = wire.NewSet(ioc.InitDB, ioc.InitRedis, ioc.InitRouter, handler.InitHandlers, handler.InitMiddlewares)
+
+var userHandlerProvider = wire.NewSet(dao.NewUserDAO, cache.NewUserCache, repository.NewUserRepository, service.NewUserService, handler.NewUserHandler)
+
+var articleHandlerProvider = wire.NewSet(dao.NewArticleDAO, repository.NewArticleRepository, service.NewArticleService, handler.NewArticleHandler)
