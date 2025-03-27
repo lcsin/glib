@@ -8,7 +8,7 @@ import (
 )
 
 type IArticleService interface {
-	Add(ctx context.Context, article domain.Article) (int64, error)
+	Save(ctx context.Context, article domain.Article) (int64, error)
 	Detail(ctx context.Context, id int64) (*domain.Article, error)
 }
 
@@ -20,7 +20,11 @@ func NewArticleService(repo repository.IArticleRepository) IArticleService {
 	return &ArticleService{repo: repo}
 }
 
-func (a *ArticleService) Add(ctx context.Context, article domain.Article) (int64, error) {
+func (a *ArticleService) Save(ctx context.Context, article domain.Article) (int64, error) {
+	if article.ID > 0 {
+		err := a.repo.Update(ctx, article)
+		return article.ID, err
+	}
 	return a.repo.Create(ctx, article)
 }
 

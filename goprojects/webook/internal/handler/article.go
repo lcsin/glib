@@ -22,14 +22,14 @@ func NewArticleHandler(svc service.IArticleService) *ArticleHandler {
 func (a *ArticleHandler) RegisterRoutes(v1 *gin.Engine) {
 	g := v1.Group("/articles/v1")
 
-	g.POST("/add", a.Add)
-	g.POST("/detail/:id", a.Detail)
 	g.POST("/edit", a.Edit)
+	g.POST("/detail/:id", a.Detail)
 	g.POST("/delete", a.Delete)
 }
 
-func (a *ArticleHandler) Add(c *gin.Context) {
+func (a *ArticleHandler) Edit(c *gin.Context) {
 	type Req struct {
+		ID      int64  `json:"id"`
 		Title   string `json:"title"`
 		Content string `json:"content"`
 	}
@@ -44,7 +44,8 @@ func (a *ArticleHandler) Add(c *gin.Context) {
 		return
 	}
 
-	aid, err := a.svc.Add(c, domain.Article{
+	aid, err := a.svc.Save(c, domain.Article{
+		ID:      req.ID,
 		Title:   req.Title,
 		Content: req.Content,
 		Author: domain.Author{
@@ -73,10 +74,6 @@ func (a *ArticleHandler) Detail(c *gin.Context) {
 	}
 
 	pkg.ResponseOK(c, article)
-}
-
-func (a *ArticleHandler) Edit(c *gin.Context) {
-
 }
 
 func (a *ArticleHandler) Delete(c *gin.Context) {

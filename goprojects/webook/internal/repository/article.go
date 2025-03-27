@@ -12,7 +12,7 @@ type IArticleRepository interface {
 	Create(ctx context.Context, article domain.Article) (int64, error)
 	GetByID(ctx context.Context, id int64) (*domain.Article, error)
 	GetByUID(ctx context.Context, uid int64) ([]*domain.Article, error)
-	Edit(ctx context.Context, title, content string) error
+	Update(ctx context.Context, article domain.Article) error
 	DeleteByID(ctx context.Context, id int64) error
 }
 
@@ -87,8 +87,12 @@ func (a *ArticleRepository) GetByUID(ctx context.Context, uid int64) ([]*domain.
 	return list, nil
 }
 
-func (a *ArticleRepository) Edit(ctx context.Context, title, content string) error {
-	return a.article.Update(ctx, model.Article{Title: title, Content: content})
+func (a *ArticleRepository) Update(ctx context.Context, article domain.Article) error {
+	return a.article.UpdateByID(ctx, model.Article{
+		ID:      article.ID,
+		Title:   article.Title,
+		Content: article.Content,
+	})
 }
 
 func (a *ArticleRepository) DeleteByID(ctx context.Context, id int64) error {

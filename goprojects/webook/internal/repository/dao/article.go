@@ -12,7 +12,7 @@ type IArticleDAO interface {
 	Insert(ctx context.Context, article model.Article) (int64, error)
 	SelectByID(ctx context.Context, id int64) (*model.Article, error)
 	SelectByUID(ctx context.Context, uid int64) ([]*model.Article, error)
-	Update(ctx context.Context, article model.Article) error
+	UpdateByID(ctx context.Context, article model.Article) error
 	DeleteByID(ctx context.Context, id int64) error
 }
 
@@ -51,11 +51,11 @@ func (a *ArticleDAO) SelectByUID(ctx context.Context, uid int64) ([]*model.Artic
 	return articles, nil
 }
 
-func (a *ArticleDAO) Update(ctx context.Context, article model.Article) error {
-	return a.db.WithContext(ctx).Where("id = ?", article.ID).UpdateColumns(map[string]interface{}{
+func (a *ArticleDAO) UpdateByID(ctx context.Context, article model.Article) error {
+	return a.db.WithContext(ctx).Model(&model.Article{}).Where("id = ?", article.ID).UpdateColumns(map[string]interface{}{
 		"title":        article.Title,
 		"content":      article.Content,
-		"updated_time": time.Now(),
+		"updated_time": time.Now().UnixMilli(),
 	}).Error
 }
 
