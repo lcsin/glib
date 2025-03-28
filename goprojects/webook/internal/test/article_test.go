@@ -60,11 +60,6 @@ func (a *ArticleTestSuite) TestEdit() {
 		Title   string
 		Content string
 	}
-	type Response[T any] struct {
-		Code    int64  `json:"code"`
-		Message string `json:"message"`
-		Data    T      `json:"data"`
-	}
 	testCases := []struct {
 		name string
 		// 要提前准备的数据
@@ -76,7 +71,7 @@ func (a *ArticleTestSuite) TestEdit() {
 		// 预期响应
 		wantCode int
 		// 预期返回结果
-		wantResult Response[int64]
+		wantResult pkg.Response[int64]
 	}{
 		{
 			name:   "新建帖子成功",
@@ -87,7 +82,7 @@ func (a *ArticleTestSuite) TestEdit() {
 				Content: "我的内容",
 			},
 			wantCode: http.StatusOK,
-			wantResult: Response[int64]{
+			wantResult: pkg.Response[int64]{
 				Code:    0,
 				Message: "ok",
 				Data:    1,
@@ -109,7 +104,7 @@ func (a *ArticleTestSuite) TestEdit() {
 				Content: "我的新内容",
 			},
 			wantCode: http.StatusOK,
-			wantResult: Response[int64]{
+			wantResult: pkg.Response[int64]{
 				Code:    0,
 				Message: "ok",
 				Data:    1,
@@ -133,7 +128,7 @@ func (a *ArticleTestSuite) TestEdit() {
 				Content: "1的帖子",
 			},
 			wantCode: http.StatusOK,
-			wantResult: Response[int64]{
+			wantResult: pkg.Response[int64]{
 				Code:    -1,
 				Message: "系统错误",
 				Data:    0,
@@ -158,7 +153,7 @@ func (a *ArticleTestSuite) TestEdit() {
 				return
 			}
 
-			var result Response[int64]
+			var result pkg.Response[int64]
 			err = json.NewDecoder(resp.Body).Decode(&result)
 			require.NoError(t, err)
 			assert.Equal(t, tc.wantResult, result)
@@ -169,11 +164,6 @@ func (a *ArticleTestSuite) TestEdit() {
 
 // 测试发布帖子
 func (a *ArticleTestSuite) TestPublish() {
-	type Response[T any] struct {
-		Code    int64  `json:"code"`
-		Message string `json:"message"`
-		Data    T      `json:"data"`
-	}
 	testCases := []pkg.Case{
 		{
 			Name: "发布帖子成功",
@@ -193,7 +183,7 @@ func (a *ArticleTestSuite) TestPublish() {
 				assert.Equal(t, article.Status, int8(domain.ArticlePublished))
 			},
 			ExpCode: http.StatusOK,
-			ExpResult: Response[int64]{
+			ExpResult: pkg.Response[int64]{
 				Code:    0,
 				Message: "ok",
 				Data:    0,
@@ -210,7 +200,7 @@ func (a *ArticleTestSuite) TestPublish() {
 			a.server.ServeHTTP(tc.Response, req)
 			assert.Equal(t, tc.ExpCode, tc.Response.Code)
 
-			var result Response[int64]
+			var result pkg.Response[int64]
 			err = tc.ResponseBodyDecoder(&result)
 			require.NoError(t, err)
 			assert.Equal(t, tc.ExpResult, result)
