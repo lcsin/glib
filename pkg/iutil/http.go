@@ -11,8 +11,7 @@ import (
 
 // POST 发送HTTP POST请求
 func POST(url string, body []byte) ([]byte, error) {
-	buf := bytes.NewBuffer(body)
-	resp, err := http.Post(url, "application/json;charset=utf-8", buf)
+	resp, err := http.Post(url, "application/json;charset=utf-8", bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +49,7 @@ func GET(url string) ([]byte, error) {
 
 // HTTP 发送HTTP请求
 func HTTP(url, method string, body []byte, headers map[string]string) ([]byte, error) {
-	buf := bytes.NewBuffer(body)
-	req, err := http.NewRequest(method, url, buf)
+	req, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}

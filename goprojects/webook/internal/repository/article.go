@@ -13,7 +13,8 @@ type IArticleRepository interface {
 	GetByID(ctx context.Context, id int64) (*domain.Article, error)
 	GetByUID(ctx context.Context, uid int64) ([]*domain.Article, error)
 	Update(ctx context.Context, article domain.Article) error
-	DeleteByID(ctx context.Context, id int64) error
+	DeleteByID(ctx context.Context, article domain.Article) error
+	PublishByID(ctx context.Context, article domain.Article) error
 }
 
 type ArticleRepository struct {
@@ -89,12 +90,25 @@ func (a *ArticleRepository) GetByUID(ctx context.Context, uid int64) ([]*domain.
 
 func (a *ArticleRepository) Update(ctx context.Context, article domain.Article) error {
 	return a.article.UpdateByID(ctx, model.Article{
-		ID:      article.ID,
-		Title:   article.Title,
-		Content: article.Content,
+		ID:       article.ID,
+		AuthorID: article.Author.ID,
+		Title:    article.Title,
+		Content:  article.Content,
 	})
 }
 
-func (a *ArticleRepository) DeleteByID(ctx context.Context, id int64) error {
-	return a.article.DeleteByID(ctx, id)
+func (a *ArticleRepository) DeleteByID(ctx context.Context, article domain.Article) error {
+	return a.article.DeleteByID(ctx, model.Article{
+		ID:       article.ID,
+		AuthorID: article.Author.ID,
+		Status:   article.Status,
+	})
+}
+
+func (a *ArticleRepository) PublishByID(ctx context.Context, article domain.Article) error {
+	return a.article.UpdateStatusByID(ctx, model.Article{
+		ID:       article.ID,
+		AuthorID: article.Author.ID,
+		Status:   article.Status,
+	})
 }

@@ -4,21 +4,19 @@ import (
 	"io"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPOST(t *testing.T) {
 	bytes, err := POST("https://www.baidu.com", nil)
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 	t.Log(string(bytes))
 }
 
 func TestGET(t *testing.T) {
 	bytes, err := GET("https://www.baidu.com")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 	t.Log(string(bytes))
 }
 

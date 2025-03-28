@@ -1,5 +1,12 @@
 package domain
 
+const (
+	// ArticlePublished 文章已发布
+	ArticlePublished = 1
+	// ArticleDeleted 文章已被删除
+	ArticleDeleted = 2
+)
+
 type Article struct {
 	ID      int64  `json:"id"`
 	Title   string `json:"title"`

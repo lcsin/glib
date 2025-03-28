@@ -24,7 +24,8 @@ func (a *ArticleHandler) RegisterRoutes(v1 *gin.Engine) {
 
 	g.POST("/edit", a.Edit)
 	g.POST("/detail/:id", a.Detail)
-	g.POST("/delete", a.Delete)
+	g.POST("/release/:id", a.Release)
+	g.POST("/delete/:id", a.Delete)
 }
 
 func (a *ArticleHandler) Edit(c *gin.Context) {
@@ -69,13 +70,65 @@ func (a *ArticleHandler) Detail(c *gin.Context) {
 
 	article, err := a.svc.Detail(c, articleId)
 	if err != nil {
-		pkg.ResponseError(c, -1, err.Error())
+		pkg.ResponseError(c, -1, "系统错误")
 		return
 	}
 
 	pkg.ResponseOK(c, article)
 }
 
-func (a *ArticleHandler) Delete(c *gin.Context) {
+func (a *ArticleHandler) Release(c *gin.Context) {
+	id := c.Param("id")
+	articleId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		pkg.ResponseError(c, -1, "参数无效")
+		return
+	}
 
+	uid, err := GetContextJwtUID(c)
+	if err != nil {
+		pkg.ResponseError(c, -1, err.Error())
+		return
+	}
+
+	if err = a.svc.Release(c, domain.Article{
+		ID:     articleId,
+		Status: domain.ArticlePublished,
+		Author: domain.Author{
+			ID: uid,
+		},
+	}); err != nil {
+		pkg.ResponseError(c, -1, "系统错误")
+		return
+	}
+
+	pkg.ResponseOK(c, nil)
+}
+
+func (a *ArticleHandler) Delete(c *gin.Context) {
+	id := c.Param("id")
+	articleId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		pkg.ResponseError(c, -1, "参数无效")
+		return
+	}
+
+	uid, err := GetContextJwtUID(c)
+	if err != nil {
+		pkg.ResponseError(c, -1, err.Error())
+		return
+	}
+
+	if err = a.svc.Delete(c, domain.Article{
+		ID:     articleId,
+		Status: domain.ArticleDeleted,
+		Author: domain.Author{
+			ID: uid,
+		},
+	}); err != nil {
+		pkg.ResponseError(c, -1, "系统错误")
+		return
+	}
+
+	pkg.ResponseOK(c, nil)
 }

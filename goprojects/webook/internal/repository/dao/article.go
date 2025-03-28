@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/lcsin/webook/internal/repository/model"
@@ -13,7 +14,8 @@ type IArticleDAO interface {
 	SelectByID(ctx context.Context, id int64) (*model.Article, error)
 	SelectByUID(ctx context.Context, uid int64) ([]*model.Article, error)
 	UpdateByID(ctx context.Context, article model.Article) error
-	DeleteByID(ctx context.Context, id int64) error
+	DeleteByID(ctx context.Context, article model.Article) error
+	UpdateStatusByID(ctx context.Context, article model.Article) error
 }
 
 type ArticleDAO struct {
@@ -52,13 +54,42 @@ func (a *ArticleDAO) SelectByUID(ctx context.Context, uid int64) ([]*model.Artic
 }
 
 func (a *ArticleDAO) UpdateByID(ctx context.Context, article model.Article) error {
-	return a.db.WithContext(ctx).Model(&model.Article{}).Where("id = ?", article.ID).UpdateColumns(map[string]interface{}{
-		"title":        article.Title,
-		"content":      article.Content,
-		"updated_time": time.Now().UnixMilli(),
-	}).Error
+	res := a.db.WithContext(ctx).Model(&model.Article{}).
+		Where("id = ? and author_id = ?", article.ID, article.AuthorID).
+		UpdateColumns(map[string]interface{}{
+			"title":        article.Title,
+			"content":      article.Content,
+			"updated_time": time.Now().UnixMilli(),
+		})
+	if res.RowsAffected == 0 {
+		return fmt.Errorf("更新结果为0. id=%d author_id=%d", article.ID, article.AuthorID)
+	}
+	return res.Error
 }
 
-func (a *ArticleDAO) DeleteByID(ctx context.Context, id int64) error {
-	return a.db.WithContext(ctx).Where("id = ?", id).Delete(&model.Article{}).Error
+func (a *ArticleDAO) DeleteByID(ctx context.Context, article model.Article) error {
+	res := a.db.WithContext(ctx).Model(&model.Article{}).
+		Where("id = ? and author_id = ?", article.ID, article.AuthorID).
+		UpdateColumns(map[string]interface{}{
+			"status":       article.Status,
+			"deleted":      true,
+			"deleted_time": time.Now().UnixMilli(),
+		})
+	if res.RowsAffected == 0 {
+		return fmt.Errorf("更新结果为0. id=%d author_id=%d", article.ID, article.AuthorID)
+	}
+	return res.Error
+}
+
+func (a *ArticleDAO) UpdateStatusByID(ctx context.Context, article model.Article) error {
+	res := a.db.WithContext(ctx).Model(&model.Article{}).
+		Where("id = ? and author_id = ?", article.ID, article.AuthorID).
+		UpdateColumns(map[string]interface{}{
+			"status":       article.Status,
+			"updated_time": time.Now().UnixMilli(),
+		})
+	if res.RowsAffected == 0 {
+		return fmt.Errorf("更新结果为0. id=%d author_id=%d", article.ID, article.AuthorID)
+	}
+	return res.Error
 }
