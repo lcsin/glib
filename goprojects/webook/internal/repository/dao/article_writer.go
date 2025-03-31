@@ -9,52 +9,53 @@ import (
 	"gorm.io/gorm"
 )
 
-type IArticleDAO interface {
-	Insert(ctx context.Context, article model.Article) (int64, error)
-	SelectByID(ctx context.Context, id int64) (*model.Article, error)
-	SelectByUID(ctx context.Context, uid int64) ([]*model.Article, error)
-	UpdateByID(ctx context.Context, article model.Article) error
-	DeleteByID(ctx context.Context, article model.Article) error
-	UpdateStatusByID(ctx context.Context, article model.Article) error
+type IArticleWriterDAO interface {
+	Insert(ctx context.Context, article model.ArticleWriter) (int64, error)
+	SelectByID(ctx context.Context, id int64) (*model.ArticleWriter, error)
+	SelectByUID(ctx context.Context, uid int64) ([]*model.ArticleWriter, error)
+	UpdateByID(ctx context.Context, article model.ArticleWriter) error
+	DeleteByID(ctx context.Context, article model.ArticleWriter) error
+	UpdateStatusByID(ctx context.Context, article model.ArticleWriter) error
 }
 
-type ArticleDAO struct {
+type ArticleWriterDAO struct {
 	db *gorm.DB
 }
 
-func NewArticleDAO(db *gorm.DB) IArticleDAO {
-	return &ArticleDAO{db: db}
+func NewArticleWriterDAO(db *gorm.DB) IArticleWriterDAO {
+	return &ArticleWriterDAO{db: db}
 }
 
-func (a *ArticleDAO) Insert(ctx context.Context, article model.Article) (int64, error) {
-	art := model.Article{
+func (a *ArticleWriterDAO) Insert(ctx context.Context, article model.ArticleWriter) (int64, error) {
+	art := model.ArticleWriter{
 		AuthorID:    article.AuthorID,
 		Title:       article.Title,
 		Content:     article.Content,
+		Status:      article.Status,
 		CreatedTime: time.Now().UnixMilli(),
 	}
 	err := a.db.WithContext(ctx).Create(&art).Error
 	return art.ID, err
 }
 
-func (a *ArticleDAO) SelectByID(ctx context.Context, id int64) (*model.Article, error) {
-	var article model.Article
+func (a *ArticleWriterDAO) SelectByID(ctx context.Context, id int64) (*model.ArticleWriter, error) {
+	var article model.ArticleWriter
 	if err := a.db.WithContext(ctx).Where("id = ?", id).First(&article).Error; err != nil {
 		return nil, err
 	}
 	return &article, nil
 }
 
-func (a *ArticleDAO) SelectByUID(ctx context.Context, uid int64) ([]*model.Article, error) {
-	var articles []*model.Article
+func (a *ArticleWriterDAO) SelectByUID(ctx context.Context, uid int64) ([]*model.ArticleWriter, error) {
+	var articles []*model.ArticleWriter
 	if err := a.db.WithContext(ctx).Where("uid = ?", uid).Find(&articles).Error; err != nil {
 		return nil, err
 	}
 	return articles, nil
 }
 
-func (a *ArticleDAO) UpdateByID(ctx context.Context, article model.Article) error {
-	res := a.db.WithContext(ctx).Model(&model.Article{}).
+func (a *ArticleWriterDAO) UpdateByID(ctx context.Context, article model.ArticleWriter) error {
+	res := a.db.WithContext(ctx).Model(&model.ArticleWriter{}).
 		Where("id = ? and author_id = ?", article.ID, article.AuthorID).
 		UpdateColumns(map[string]interface{}{
 			"title":        article.Title,
@@ -67,8 +68,8 @@ func (a *ArticleDAO) UpdateByID(ctx context.Context, article model.Article) erro
 	return res.Error
 }
 
-func (a *ArticleDAO) DeleteByID(ctx context.Context, article model.Article) error {
-	res := a.db.WithContext(ctx).Model(&model.Article{}).
+func (a *ArticleWriterDAO) DeleteByID(ctx context.Context, article model.ArticleWriter) error {
+	res := a.db.WithContext(ctx).Model(&model.ArticleWriter{}).
 		Where("id = ? and author_id = ?", article.ID, article.AuthorID).
 		UpdateColumns(map[string]interface{}{
 			"status":       article.Status,
@@ -81,8 +82,8 @@ func (a *ArticleDAO) DeleteByID(ctx context.Context, article model.Article) erro
 	return res.Error
 }
 
-func (a *ArticleDAO) UpdateStatusByID(ctx context.Context, article model.Article) error {
-	res := a.db.WithContext(ctx).Model(&model.Article{}).
+func (a *ArticleWriterDAO) UpdateStatusByID(ctx context.Context, article model.ArticleWriter) error {
+	res := a.db.WithContext(ctx).Model(&model.ArticleWriter{}).
 		Where("id = ? and author_id = ?", article.ID, article.AuthorID).
 		UpdateColumns(map[string]interface{}{
 			"status":       article.Status,

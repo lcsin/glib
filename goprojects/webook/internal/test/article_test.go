@@ -46,14 +46,15 @@ func (a *ArticleTestSuite) SetupSuite() {
 // 每一个测试都会执行
 func (a *ArticleTestSuite) TearDownTest() {
 	// 清空所有数据，并且自增主键恢复到 1
-	a.db.Exec("TRUNCATE TABLE article_tbl")
+	a.db.Exec("TRUNCATE TABLE article_writer_tbl")
+	a.db.Exec("TRUNCATE TABLE article_reader_tbl")
 }
 
 func TestArticle(t *testing.T) {
 	suite.Run(t, &ArticleTestSuite{})
 }
 
-// 测试新建帖子
+// 测试编辑帖子
 func (a *ArticleTestSuite) TestEdit() {
 	type Req struct {
 		ID      int64
@@ -90,7 +91,7 @@ func (a *ArticleTestSuite) TestEdit() {
 		}, {
 			name: "更新自己的帖子成功",
 			before: func(t *testing.T) {
-				a.db.Create(&model.Article{
+				a.db.Create(&model.ArticleWriter{
 					AuthorID:    1,
 					Title:       "我的标题",
 					Content:     "我的内容",
@@ -112,7 +113,7 @@ func (a *ArticleTestSuite) TestEdit() {
 		}, {
 			name: "更新别人的帖子失败",
 			before: func(t *testing.T) {
-				a.db.Create(&model.Article{
+				a.db.Create(&model.ArticleWriter{
 					ID:          3,
 					AuthorID:    2,
 					Title:       "2的帖子",
@@ -164,29 +165,37 @@ func (a *ArticleTestSuite) TestEdit() {
 
 // 测试发布帖子
 func (a *ArticleTestSuite) TestPublish() {
+	type Req struct {
+		ID      int64
+		Title   string
+		Content string
+	}
 	testCases := []pkg.Case{
 		{
-			Name: "发布帖子成功",
+			Name: "新建并发布帖子",
+			Req: Req{
+				ID:      0,
+				Title:   "新建帖子并发布",
+				Content: "新建帖子并发布",
+			},
 			Before: func(t *testing.T) {
-				a.db.Create(&model.Article{
-					AuthorID:    1,
-					Title:       "帖子1",
-					Content:     "帖子1",
-					Status:      0,
-					CreatedTime: time.Now().UnixMilli(),
-				})
 			},
 			After: func(t *testing.T) {
-				var article model.Article
-				err := a.db.Where("id = ?", 1).First(&article).Error
+				var writer model.ArticleWriter
+				err := a.db.Where("id = ?", 1).First(&writer).Error
 				assert.NoError(t, err)
-				assert.Equal(t, article.Status, int8(domain.ArticlePublished))
+				assert.Equal(t, writer.Status, int8(domain.ArticlePublished))
+
+				var reader model.ArticleReader
+				err = a.db.Where("id = ?", 1).First(&reader).Error
+				assert.NoError(t, err)
+				assert.Equal(t, reader.Status, int8(domain.ArticlePublished))
 			},
 			ExpCode: http.StatusOK,
 			ExpResult: pkg.Response[int64]{
 				Code:    0,
 				Message: "ok",
-				Data:    0,
+				Data:    1,
 			},
 		},
 	}
@@ -195,7 +204,13 @@ func (a *ArticleTestSuite) TestPublish() {
 		a.T().Run(tc.Name, func(t *testing.T) {
 			tc.Before(t)
 
-			req, err := tc.HttpTest(http.MethodPost, "/articles/v1/release/1", nil, nil)
+			data, err := json.Marshal(tc.Req)
+			assert.NoError(t, err)
+
+			headers := map[string]string{
+				"Content-Type": "application/json",
+			}
+			req, err := tc.HttpTest(http.MethodPost, "/articles/v1/release", data, headers)
 			assert.NoError(t, err)
 			a.server.ServeHTTP(tc.Response, req)
 			assert.Equal(t, tc.ExpCode, tc.Response.Code)

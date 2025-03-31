@@ -28,8 +28,9 @@ func InitWebServer() *gin.Engine {
 	iUserRepository := repository.NewUserRepository(iUserDAO, iUserCache)
 	iUserService := service.NewUserService(iUserRepository)
 	userHandler := handler.NewUserHandler(iUserService)
-	iArticleDAO := dao.NewArticleDAO(db)
-	iArticleRepository := repository.NewArticleRepository(iArticleDAO, iUserDAO)
+	iArticleWriterDAO := dao.NewArticleWriterDAO(db)
+	iArticleReaderDAO := dao.NewArticleReaderDAO(db)
+	iArticleRepository := repository.NewArticleRepository(iArticleWriterDAO, iArticleReaderDAO, iUserDAO)
 	iArticleService := service.NewArticleService(iArticleRepository)
 	articleHandler := handler.NewArticleHandler(iArticleService)
 	v2 := handler.InitHandlers(userHandler, articleHandler)
@@ -37,11 +38,13 @@ func InitWebServer() *gin.Engine {
 	return engine
 }
 
+// 初始化测试用的articleHandler
 func InitTestArticleHandler() *handler.ArticleHandler {
 	db := ioc.InitTestDB()
-	iArticleDAO := dao.NewArticleDAO(db)
+	iArticleWriterDAO := dao.NewArticleWriterDAO(db)
+	iArticleReaderDAO := dao.NewArticleReaderDAO(db)
 	iUserDAO := dao.NewUserDAO(db)
-	iArticleRepository := repository.NewArticleRepository(iArticleDAO, iUserDAO)
+	iArticleRepository := repository.NewArticleRepository(iArticleWriterDAO, iArticleReaderDAO, iUserDAO)
 	iArticleService := service.NewArticleService(iArticleRepository)
 	articleHandler := handler.NewArticleHandler(iArticleService)
 	return articleHandler
@@ -49,8 +52,11 @@ func InitTestArticleHandler() *handler.ArticleHandler {
 
 // wire.go:
 
+// 第三方依赖注入
 var thirdProvider = wire.NewSet(ioc.InitDB, ioc.InitRedis, ioc.InitRouter, handler.InitHandlers, handler.InitMiddlewares)
 
+// userHandler依赖注入
 var userHandlerProvider = wire.NewSet(dao.NewUserDAO, cache.NewUserCache, repository.NewUserRepository, service.NewUserService, handler.NewUserHandler)
 
-var articleHandlerProvider = wire.NewSet(dao.NewArticleDAO, repository.NewArticleRepository, service.NewArticleService, handler.NewArticleHandler)
+// articleHandler依赖注入
+var articleHandlerProvider = wire.NewSet(dao.NewArticleWriterDAO, dao.NewArticleReaderDAO, repository.NewArticleRepository, service.NewArticleService, handler.NewArticleHandler)

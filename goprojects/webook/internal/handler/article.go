@@ -24,7 +24,7 @@ func (a *ArticleHandler) RegisterRoutes(v1 *gin.Engine) {
 
 	g.POST("/edit", a.Edit)
 	g.POST("/detail/:id", a.Detail)
-	g.POST("/release/:id", a.Release)
+	g.POST("/release", a.Release)
 	g.POST("/delete/:id", a.Delete)
 }
 
@@ -78,10 +78,13 @@ func (a *ArticleHandler) Detail(c *gin.Context) {
 }
 
 func (a *ArticleHandler) Release(c *gin.Context) {
-	id := c.Param("id")
-	articleId, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		pkg.ResponseError(c, -1, "参数无效")
+	type Req struct {
+		ID      int64  `json:"id"`
+		Title   string `json:"title"`
+		Content string `json:"content"`
+	}
+	var req Req
+	if err := c.Bind(&req); err != nil {
 		return
 	}
 
@@ -91,18 +94,21 @@ func (a *ArticleHandler) Release(c *gin.Context) {
 		return
 	}
 
-	if err = a.svc.Release(c, domain.Article{
-		ID:     articleId,
-		Status: domain.ArticlePublished,
+	req.ID, err = a.svc.Release(c, domain.Article{
+		ID:      req.ID,
+		Title:   req.Title,
+		Content: req.Content,
+		Status:  domain.ArticlePublished,
 		Author: domain.Author{
 			ID: uid,
 		},
-	}); err != nil {
+	})
+	if err != nil {
 		pkg.ResponseError(c, -1, "系统错误")
 		return
 	}
 
-	pkg.ResponseOK(c, nil)
+	pkg.ResponseOK(c, req.ID)
 }
 
 func (a *ArticleHandler) Delete(c *gin.Context) {

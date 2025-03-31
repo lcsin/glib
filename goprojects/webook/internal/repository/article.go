@@ -14,20 +14,22 @@ type IArticleRepository interface {
 	GetByUID(ctx context.Context, uid int64) ([]*domain.Article, error)
 	Update(ctx context.Context, article domain.Article) error
 	DeleteByID(ctx context.Context, article domain.Article) error
-	PublishByID(ctx context.Context, article domain.Article) error
+
+	Publish(ctx context.Context, article domain.Article) (int64, error)
 }
 
 type ArticleRepository struct {
-	article dao.IArticleDAO
-	user    dao.IUserDAO
+	writer dao.IArticleWriterDAO
+	reader dao.IArticleReaderDAO
+	user   dao.IUserDAO
 }
 
-func NewArticleRepository(article dao.IArticleDAO, user dao.IUserDAO) IArticleRepository {
-	return &ArticleRepository{article: article, user: user}
+func NewArticleRepository(writer dao.IArticleWriterDAO, reader dao.IArticleReaderDAO, user dao.IUserDAO) IArticleRepository {
+	return &ArticleRepository{writer: writer, reader: reader, user: user}
 }
 
 func (a *ArticleRepository) Create(ctx context.Context, article domain.Article) (int64, error) {
-	return a.article.Insert(ctx, model.Article{
+	return a.writer.Insert(ctx, model.ArticleWriter{
 		AuthorID: article.Author.ID,
 		Title:    article.Title,
 		Content:  article.Content,
@@ -35,7 +37,7 @@ func (a *ArticleRepository) Create(ctx context.Context, article domain.Article) 
 }
 
 func (a *ArticleRepository) GetByID(ctx context.Context, id int64) (*domain.Article, error) {
-	article, err := a.article.SelectByID(ctx, id)
+	article, err := a.writer.SelectByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +62,7 @@ func (a *ArticleRepository) GetByID(ctx context.Context, id int64) (*domain.Arti
 }
 
 func (a *ArticleRepository) GetByUID(ctx context.Context, uid int64) ([]*domain.Article, error) {
-	articles, err := a.article.SelectByUID(ctx, uid)
+	articles, err := a.writer.SelectByUID(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +91,7 @@ func (a *ArticleRepository) GetByUID(ctx context.Context, uid int64) ([]*domain.
 }
 
 func (a *ArticleRepository) Update(ctx context.Context, article domain.Article) error {
-	return a.article.UpdateByID(ctx, model.Article{
+	return a.writer.UpdateByID(ctx, model.ArticleWriter{
 		ID:       article.ID,
 		AuthorID: article.Author.ID,
 		Title:    article.Title,
@@ -98,17 +100,46 @@ func (a *ArticleRepository) Update(ctx context.Context, article domain.Article) 
 }
 
 func (a *ArticleRepository) DeleteByID(ctx context.Context, article domain.Article) error {
-	return a.article.DeleteByID(ctx, model.Article{
+	err := a.writer.DeleteByID(ctx, model.ArticleWriter{
 		ID:       article.ID,
 		AuthorID: article.Author.ID,
 		Status:   article.Status,
 	})
+	err = a.reader.DeleteByID(ctx, model.ArticleReader{
+		ID:       article.ID,
+		AuthorID: article.Author.ID,
+		Status:   article.Status,
+	})
+
+	return err
 }
 
-func (a *ArticleRepository) PublishByID(ctx context.Context, article domain.Article) error {
-	return a.article.UpdateStatusByID(ctx, model.Article{
+func (a *ArticleRepository) Publish(ctx context.Context, article domain.Article) (int64, error) {
+	var (
+		id  int64
+		err error
+	)
+	if article.ID == 0 {
+		id, err = a.writer.Insert(ctx, model.ArticleWriter{
+			AuthorID: article.Author.ID,
+			Title:    article.Title,
+			Content:  article.Content,
+			Status:   article.Status,
+		})
+	} else {
+		err = a.writer.UpdateStatusByID(ctx, model.ArticleWriter{
+			ID:       article.ID,
+			AuthorID: article.Author.ID,
+			Status:   article.Status,
+		})
+	}
+
+	id, err = a.reader.Upset(ctx, model.ArticleReader{
 		ID:       article.ID,
 		AuthorID: article.Author.ID,
+		Title:    article.Title,
+		Content:  article.Content,
 		Status:   article.Status,
 	})
+	return id, err
 }

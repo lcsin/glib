@@ -42,7 +42,7 @@ var userHandlerProvider = wire.NewSet(
 
 // articleHandler依赖注入
 var articleHandlerProvider = wire.NewSet(
-	dao.NewArticleDAO,
+	dao.NewArticleWriterDAO, dao.NewArticleReaderDAO,
 	repository.NewArticleRepository,
 	service.NewArticleService,
 	handler.NewArticleHandler,

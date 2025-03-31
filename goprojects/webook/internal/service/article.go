@@ -10,7 +10,7 @@ import (
 type IArticleService interface {
 	Save(ctx context.Context, article domain.Article) (int64, error)
 	Detail(ctx context.Context, id int64) (*domain.Article, error)
-	Release(ctx context.Context, article domain.Article) error
+	Release(ctx context.Context, article domain.Article) (int64, error)
 	Delete(ctx context.Context, article domain.Article) error
 }
 
@@ -34,8 +34,8 @@ func (a *ArticleService) Detail(ctx context.Context, id int64) (*domain.Article,
 	return a.repo.GetByID(ctx, id)
 }
 
-func (a *ArticleService) Release(ctx context.Context, article domain.Article) error {
-	return a.repo.PublishByID(ctx, article)
+func (a *ArticleService) Release(ctx context.Context, article domain.Article) (int64, error) {
+	return a.repo.Publish(ctx, article)
 }
 
 func (a *ArticleService) Delete(ctx context.Context, article domain.Article) error {

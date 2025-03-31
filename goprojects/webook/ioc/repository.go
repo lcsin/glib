@@ -27,7 +27,7 @@ func InitDB() *gorm.DB {
 		panic(err)
 	}
 	// 初始化数据库表
-	if err = db.AutoMigrate(&model.User{}, &model.Article{}); err != nil {
+	if err = db.AutoMigrate(&model.User{}, &model.ArticleWriter{}, &model.ArticleReader{}); err != nil {
 		panic(err)
 	}
 
@@ -47,7 +47,7 @@ func InitTestDB() *gorm.DB {
 		panic(err)
 	}
 	// 初始化数据库表
-	if err = db.AutoMigrate(&model.User{}, &model.Article{}); err != nil {
+	if err = db.AutoMigrate(&model.User{}, &model.ArticleWriter{}, &model.ArticleReader{}); err != nil {
 		panic(err)
 	}
 
