@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/lcsin/webook/internal/domain"
 	"github.com/lcsin/webook/internal/repository"
@@ -35,6 +36,8 @@ func (a *ArticleService) Detail(ctx context.Context, id int64) (*domain.Article,
 }
 
 func (a *ArticleService) Release(ctx context.Context, article domain.Article) (int64, error) {
+	article.Status = domain.ArticleStatusPublished
+	article.PublishTime = time.Now().UnixMilli()
 	return a.repo.Publish(ctx, article)
 }
 

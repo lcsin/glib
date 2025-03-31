@@ -184,12 +184,12 @@ func (a *ArticleTestSuite) TestPublish() {
 				var writer model.ArticleWriter
 				err := a.db.Where("id = ?", 1).First(&writer).Error
 				assert.NoError(t, err)
-				assert.Equal(t, writer.Status, int8(domain.ArticlePublished))
+				assert.Equal(t, writer.Status, domain.ArticleStatusPublished.ToInt8())
 
 				var reader model.ArticleReader
 				err = a.db.Where("id = ?", 1).First(&reader).Error
 				assert.NoError(t, err)
-				assert.Equal(t, reader.Status, int8(domain.ArticlePublished))
+				assert.Equal(t, reader.Status, domain.ArticleStatusPublished.ToInt8())
 			},
 			ExpCode: http.StatusOK,
 			ExpResult: pkg.Response[int64]{

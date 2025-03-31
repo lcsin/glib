@@ -98,7 +98,6 @@ func (a *ArticleHandler) Release(c *gin.Context) {
 		ID:      req.ID,
 		Title:   req.Title,
 		Content: req.Content,
-		Status:  domain.ArticlePublished,
 		Author: domain.Author{
 			ID: uid,
 		},
@@ -126,8 +125,7 @@ func (a *ArticleHandler) Delete(c *gin.Context) {
 	}
 
 	if err = a.svc.Delete(c, domain.Article{
-		ID:     articleId,
-		Status: domain.ArticleDeleted,
+		ID: articleId,
 		Author: domain.Author{
 			ID: uid,
 		},

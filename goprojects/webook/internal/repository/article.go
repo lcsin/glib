@@ -50,7 +50,7 @@ func (a *ArticleRepository) GetByID(ctx context.Context, id int64) (*domain.Arti
 		ID:          article.ID,
 		Title:       article.Title,
 		Content:     article.Content,
-		Status:      article.Status,
+		Status:      domain.ArticleStatus(article.Status),
 		CreatedTime: article.CreatedTime,
 		UpdatedTime: article.UpdatedTime,
 		PublishTime: article.PublishTime,
@@ -77,7 +77,7 @@ func (a *ArticleRepository) GetByUID(ctx context.Context, uid int64) ([]*domain.
 			ID:          v.ID,
 			Title:       v.Title,
 			Content:     v.Content,
-			Status:      v.Status,
+			Status:      domain.ArticleStatus(v.Status),
 			CreatedTime: v.CreatedTime,
 			UpdatedTime: v.UpdatedTime,
 			PublishTime: v.PublishTime,
@@ -103,12 +103,10 @@ func (a *ArticleRepository) DeleteByID(ctx context.Context, article domain.Artic
 	err := a.writer.DeleteByID(ctx, model.ArticleWriter{
 		ID:       article.ID,
 		AuthorID: article.Author.ID,
-		Status:   article.Status,
 	})
 	err = a.reader.DeleteByID(ctx, model.ArticleReader{
 		ID:       article.ID,
 		AuthorID: article.Author.ID,
-		Status:   article.Status,
 	})
 
 	return err
@@ -124,13 +122,15 @@ func (a *ArticleRepository) Publish(ctx context.Context, article domain.Article)
 			AuthorID: article.Author.ID,
 			Title:    article.Title,
 			Content:  article.Content,
-			Status:   article.Status,
+			Status:   article.Status.ToInt8(),
 		})
 	} else {
-		err = a.writer.UpdateStatusByID(ctx, model.ArticleWriter{
+		err = a.writer.UpdateByID(ctx, model.ArticleWriter{
 			ID:       article.ID,
 			AuthorID: article.Author.ID,
-			Status:   article.Status,
+			Title:    article.Title,
+			Content:  article.Content,
+			Status:   article.Status.ToInt8(),
 		})
 	}
 
@@ -139,7 +139,7 @@ func (a *ArticleRepository) Publish(ctx context.Context, article domain.Article)
 		AuthorID: article.Author.ID,
 		Title:    article.Title,
 		Content:  article.Content,
-		Status:   article.Status,
+		Status:   article.Status.ToInt8(),
 	})
 	return id, err
 }

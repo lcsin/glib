@@ -33,6 +33,7 @@ func (a *ArticleWriterDAO) Insert(ctx context.Context, article model.ArticleWrit
 		Content:     article.Content,
 		Status:      article.Status,
 		CreatedTime: time.Now().UnixMilli(),
+		PublishTime: article.PublishTime,
 	}
 	err := a.db.WithContext(ctx).Create(&art).Error
 	return art.ID, err
@@ -60,7 +61,9 @@ func (a *ArticleWriterDAO) UpdateByID(ctx context.Context, article model.Article
 		UpdateColumns(map[string]interface{}{
 			"title":        article.Title,
 			"content":      article.Content,
+			"status":       article.Status,
 			"updated_time": time.Now().UnixMilli(),
+			"publish_time": article.PublishTime,
 		})
 	if res.RowsAffected == 0 {
 		return fmt.Errorf("更新结果为0. id=%d author_id=%d", article.ID, article.AuthorID)
@@ -69,17 +72,9 @@ func (a *ArticleWriterDAO) UpdateByID(ctx context.Context, article model.Article
 }
 
 func (a *ArticleWriterDAO) DeleteByID(ctx context.Context, article model.ArticleWriter) error {
-	res := a.db.WithContext(ctx).Model(&model.ArticleWriter{}).
+	return a.db.WithContext(ctx).
 		Where("id = ? and author_id = ?", article.ID, article.AuthorID).
-		UpdateColumns(map[string]interface{}{
-			"status":       article.Status,
-			"deleted":      true,
-			"deleted_time": time.Now().UnixMilli(),
-		})
-	if res.RowsAffected == 0 {
-		return fmt.Errorf("更新结果为0. id=%d author_id=%d", article.ID, article.AuthorID)
-	}
-	return res.Error
+		Delete(&model.ArticleWriter{}).Error
 }
 
 func (a *ArticleWriterDAO) UpdateStatusByID(ctx context.Context, article model.ArticleWriter) error {
