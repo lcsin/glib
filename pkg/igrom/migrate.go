@@ -6,6 +6,19 @@ import (
 	"gorm.io/gorm"
 )
 
+type ColumnType string
+
+const (
+	Int    ColumnType = "int"
+	BigInt ColumnType = "bigint"
+
+	Float  ColumnType = "float"
+	Double ColumnType = "double"
+
+	VARCHAR ColumnType = "varchar"
+	Text    ColumnType = "text"
+)
+
 type TableMigrate struct {
 	db   *gorm.DB
 	name string
@@ -13,7 +26,7 @@ type TableMigrate struct {
 
 type ColumnMigrate struct {
 	Name    string
-	Type    string
+	Type    ColumnType
 	Len     int
 	Decimal int
 	NotNULL bool
@@ -70,9 +83,35 @@ func (t *TableMigrate) AddColumn(column *ColumnMigrate) error {
 		return fmt.Errorf("table is not exists")
 	}
 
-	sql := fmt.Sprintf("ALTER TABLE `%v` ADD COLUMN `%v`", t.name, column.Name)
+	return t.alterColumn(column, "add")
+}
+
+// AlterColumn 修改字段
+func (t *TableMigrate) AlterColumn(column *ColumnMigrate) error {
+	if column == nil {
+		return fmt.Errorf("column info  is not defined")
+	}
+	if !t.HasTable() {
+		return fmt.Errorf("table is not exists")
+	}
+	if !t.HasColumn(column.Name) {
+		return fmt.Errorf("column is not exists")
+	}
+
+	return t.alterColumn(column, "modify")
+}
+
+func (t *TableMigrate) alterColumn(column *ColumnMigrate, op string) error {
+	sql := fmt.Sprintf("ALTER TABLE `%v`", t.name)
+	switch op {
+	case "add":
+		sql += fmt.Sprintf(" ADD COLUMN `%v`", column.Name)
+	case "modify":
+		sql += fmt.Sprintf(" MODIFY COLUMN `%v`", column.Name)
+	}
+
 	switch column.Type {
-	case "float", "double":
+	case Float, Double:
 		if column.Len > 0 && column.Decimal > 0 {
 			sql += fmt.Sprintf(" %v(%v, %v)", column.Type, column.Len, column.Decimal)
 		} else {

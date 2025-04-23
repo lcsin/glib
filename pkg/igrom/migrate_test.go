@@ -24,15 +24,14 @@ func TestTable(t *testing.T) {
 
 	name := "test_tbl"
 
-	columns := []*ColumnMigrate{
-		{Name: "name", Type: "varchar", Len: 255, NotNULL: true, Comment: "姓名"},
-		{Name: "age", Type: "int", Comment: "年龄"},
-		{Name: "score", Type: "float", Comment: "分数"},
-	}
-
-	if err = NewTableMigrate(db, name).CreateTable(columns...); err != nil {
-		t.Fatal(err)
-	}
+	//columns := []*ColumnMigrate{
+	//	{Name: "name", Type: "varchar", Len: 255, NotNULL: true, Comment: "姓名"},
+	//	{Name: "age", Type: "int", Comment: "年龄"},
+	//	{Name: "score", Type: "float", Comment: "分数"},
+	//}
+	//if err = NewTableMigrate(db, name).CreateTable(columns...); err != nil {
+	//	t.Fatal(err)
+	//}
 
 	//t.Log(NewTableMigrate(db, name).HasTable())
 	//t.Log(NewTableMigrate(db, name).DropColumn("score"))
@@ -44,4 +43,13 @@ func TestTable(t *testing.T) {
 	//	Comment: "分数",
 	//}))
 	//t.Log(NewTableMigrate(db, name).RenameColumn("score1", "score"))
+
+	t.Log(NewTableMigrate(db, name).AlterColumn(&ColumnMigrate{
+		Name:    "name",
+		Type:    VARCHAR,
+		Len:     128,
+		Decimal: 0,
+		NotNULL: true,
+		Comment: "姓名",
+	}))
 }
