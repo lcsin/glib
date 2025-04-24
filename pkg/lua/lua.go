@@ -11,8 +11,3 @@ var RedisDistributeLock string
 //
 //go:embed redis_distribute_unlock.lua
 var RedisDistributeUnLock string
-
-// RedisSlideWindowRateLimiter Redis基于滑动窗口算法的限流
-//
-//go:embed ../igin/middleware/slide_window_limiter.lua
-var RedisSlideWindowRateLimiter string
