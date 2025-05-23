@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "grpc/proto";
+
+service QuickStart {
+  rpc SayHello (SayHelloReq) returns (SayHelloRep);
+}
+
+message SayHelloReq {
+  string name = 1;
+}
+message SayHelloRep {
+  string reply = 2;
+}
