@@ -1,0 +1,69 @@
+definitions:
+  models.User:
+    properties:
+      age:
+        example: 20
+        type: integer
+      name:
+        example: zhangsan
+        type: string
+      uid:
+        example: 1
+        type: integer
+    type: object
+  pkg.Response:
+    properties:
+      code:
+        example: 0
+        type: integer
+      data: {}
+      message:
+        example: ok
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /users:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 用户信息
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/pkg.Response'
+      summary: 添加用户
+  /users/{uid}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 用户uid
+        in: path
+        name: uid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/pkg.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+      summary: 根据用户ID获取用户信息
+swagger: "2.0"
