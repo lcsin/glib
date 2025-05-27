@@ -5,7 +5,6 @@ import (
 
 	"gin-swagger/internal/models"
 	"gin-swagger/internal/service"
-	"gin-swagger/pkg"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,16 +26,16 @@ func RegisterUserHandler(r gin.IRouter) {
 func AddUser(c *gin.Context) {
 	var req models.User
 	if err := c.ShouldBind(&req); err != nil {
-		pkg.ResponseError(c, -500, "参数错误")
+		ResponseError(c, -500, "参数错误")
 		return
 	}
 
 	if err := service.AddUser(req); err != nil {
-		pkg.ResponseError(c, -500, "系统错误")
+		ResponseError(c, -500, "系统错误")
 		return
 	}
 
-	pkg.ResponseOK(c, nil)
+	ResponseOK(c, nil)
 }
 
 // GetUserByID 根据用户ID获取用户信息
@@ -50,20 +49,20 @@ func AddUser(c *gin.Context) {
 func GetUserByID(c *gin.Context) {
 	uid := c.Param("uid")
 	if uid == "" {
-		pkg.ResponseError(c, -400, "缺少uid")
+		ResponseError(c, -400, "缺少uid")
 		return
 	}
 	id, err := strconv.ParseInt(uid, 10, 64)
 	if err != nil {
-		pkg.ResponseError(c, -500, "系统错误")
+		ResponseError(c, -500, "系统错误")
 		return
 	}
 
 	user, err := service.GetUserByID(id)
 	if err != nil {
-		pkg.ResponseError(c, -500, "系统错误")
+		ResponseError(c, -500, "系统错误")
 		return
 	}
 
-	pkg.ResponseOK(c, user)
+	ResponseOK(c, user)
 }
