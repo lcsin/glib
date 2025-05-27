@@ -2,6 +2,7 @@ package iutil
 
 import (
 	"testing"
+	"time"
 )
 
 func TestUtil(t *testing.T) {
@@ -35,4 +36,15 @@ func TestBalancedWildcards(t *testing.T) {
 
 	text = "{<>[]<}}"
 	t.Log(BalancedWildcards(text, dict)) // false
+}
+
+func TestRandomString(t *testing.T) {
+	t.Log(RandomString(5))
+	t.Log(RandomString(6))
+
+	time.Sleep(time.Millisecond * 200)
+	t.Log(RandomString(7))
+
+	time.Sleep(time.Second)
+	t.Log(RandomString(8))
 }

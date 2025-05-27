@@ -3,7 +3,9 @@ package iutil
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 // MD5 md5
@@ -108,4 +110,16 @@ func BalancedWildcards(text string, dict map[string]string) bool {
 		}
 	}
 	return len(stack) == 0
+}
+
+var randomString = []byte("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+// RandomString 随机字符串
+func RandomString(n int) string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	str := make([]byte, 0, n)
+	for i := 0; i < n; i++ {
+		str = append(str, randomString[r.Intn(len(randomString))])
+	}
+	return string(str)
 }
