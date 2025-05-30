@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"os"
 
@@ -24,10 +23,11 @@ func main() {
 		c.String(200, "pong")
 	})
 
-	router.POST("/upload", func(c *gin.Context) {
-		file, _ := c.FormFile("file")
-		fmt.Println(file.Filename)
-	})
+	//router.GET("/pong", func(c *gin.Context) {
+	//	c.String(http.StatusOK, "pong1")
+	//}, func(c *gin.Context) {
+	//	c.String(http.StatusOK, "pong2")
+	//})
 
 	router.Run()
 }
