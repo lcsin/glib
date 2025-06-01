@@ -2,3 +2,4 @@
 .vscode
 /main.go
 /pkg/igin/gin.log
+*.log
