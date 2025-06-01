@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lcsin/glib/pkg/ilogrus"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -15,8 +17,11 @@ func main() {
 	//gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
 	//logrus.AddHook(ilogrus.NewErrorHook())
 
+	logrus.AddHook(ilogrus.NewErrorHook())
+
 	router := gin.Default()
 	router.GET("/ping", func(c *gin.Context) {
+		logrus.Error("test error log ...")
 		c.String(200, "pong")
 	})
 
