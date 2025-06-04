@@ -15,3 +15,6 @@ func TestLog(t *testing.T) {
 	logrus.AddHook(hook)
 	logrus.Error("err log ...")
 }
+
+func TestCaller(t *testing.T) {
+}
