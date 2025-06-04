@@ -1,0 +1,7 @@
+app:
+  name: "ginlayout"
+  port: 8080
+jwt:
+  key: "c0c5091f15628a94ead9f5b7184d918a"
+mysql:
+  dsn: "root:root@tcp(192.168.193.240:3306)/testdb?charset=utf8mb4&parseTime=True"

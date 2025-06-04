@@ -1,0 +1,5 @@
+*.exe
+/cmd/app/app.exe
+*.idea
+*.vscode
+*.log
