@@ -48,14 +48,12 @@ func GET(url string) ([]byte, error) {
 }
 
 // HTTP 发送HTTP请求
-func HTTP(url, method string, body []byte, headers map[string]string) ([]byte, error) {
+func HTTP(url, method string, body []byte, header http.Header) ([]byte, error) {
 	req, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
-	for k, v := range headers {
-		req.Header.Add(k, v)
-	}
+	req.Header = header
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

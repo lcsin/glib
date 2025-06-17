@@ -6,6 +6,8 @@ import (
 
 func TestExists(t *testing.T) {
 	t.Log(PathExists("fsys.go"))
+	t.Log(PathExists("fsys111.go"))
+	t.Log(PathExists("fsys"))
 }
 
 func TestCopyFile(t *testing.T) {

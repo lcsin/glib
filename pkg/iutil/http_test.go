@@ -2,6 +2,7 @@ package iutil
 
 import (
 	"io"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -49,11 +50,11 @@ func TestHTTP(t *testing.T) {
 }`)
 	body, _ := io.ReadAll(payload)
 
-	bytes, err := HTTP(url, method, body, map[string]string{
-		"Content-Type":  "application/json",
-		"Accept":        "application/json",
-		"Authorization": "Bearer <apikey>",
-	})
+	header := http.Header{}
+	header.Set("Content-Type", "application/json")
+	header.Set("Accept", "application/json")
+	header.Set("Authorization", "Bearer <apikey>")
+	bytes, err := HTTP(url, method, body, header)
 	if err != nil {
 		panic(err)
 	}
